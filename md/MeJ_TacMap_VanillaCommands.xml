@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdscript name="MeJ_TacMap_VanillaCommands" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="md.xsd">
+    <cues>
+        <cue name="HandleSignals" instantiate="true" namespace="this">
+            <conditions>
+                <check_any>
+                    <event_object_signalled object="player.primaryship" param="'tacmap_flytopos'"/>
+                </check_any>
+            </conditions>
+            <actions>
+                <set_value name="$subject" exact="event.param2" />
+                <set_value name="$destination" exact="event.param3.{1}" />
+                <set_value name="$posArray" exact="event.param3.{2}" />
+                
+                <signal_objects object="$subject" param="'stop order'" />
+                
+                <!-- <speak actor="$subject.pilot" line="[1012, 1013, 1018, 1019].random" comment="Yes sir" /> -->
+                
+                <set_value name="$pos" exact="position.[$posArray.{1}, $posArray.{2}, $posArray.{3}]" />
+                <signal_objects object="$subject" param="'fly to pos'" param2="$destination" param3="$pos" delay="200ms" />
+            </actions>
+        </cue>
+    </cues>
+</mdscript>

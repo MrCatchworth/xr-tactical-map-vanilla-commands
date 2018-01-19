@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<content id="mej_tacmap_vanillacommands" name="Tactical Map - Vanilla Commands" description="For use with the Tactical Map. Provides access to commands provided by the vanilla game." author="MegaJohnny" version="120" date="2017-09-28" lastupdate="1428141004">
+  <text language="44" description="Default orders for the tactical map that gives access to vanilla commands"></text>
+  <dependency version="410" />
+  <dependency id="mej_tacticalmap" version="120" />
+</content>

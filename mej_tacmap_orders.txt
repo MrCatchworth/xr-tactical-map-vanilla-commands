@@ -1,0 +1,241 @@
+local C = require("ffi").C
+local delay = 0.2
+
+return {
+    issuableOrders = {
+        {
+            --Fly to Position
+            name = ReadText(1002, 2061),
+            
+            multicast = true,
+            
+            filter = function(order)
+                return order.targetType == "position" and
+                (
+                    order.spaceType == "zone" or
+                    order.spaceType == "sector"
+                )
+            end,
+            
+            issue = function(order)
+                
+                local destination
+                if order.spaceType == "zone" then
+                    destination = order.space
+                else
+                    destination = C.GetZoneAt(order.space, order.target)
+                end
+                destination = ConvertStringToLuaID(tostring(destination))
+                
+                SignalObject(GetPlayerPrimaryShipID(), "tacmap_flytopos",
+                    order.subject,
+                    {
+                        destination,
+                        {order.target.x, order.target.y, order.target.z}
+                    }
+                )
+            end
+        },
+        {
+            --Stop Task
+            name = ReadText(1002, 2028),
+            
+            multicast = false,
+            
+            filter = function(order)
+                return (
+                    order.targetType == "object" and
+                    IsSameComponent(order.target, order.subject)
+                )
+            end,
+            
+            issue = function(order)
+                SignalObject(order.subject, "stop order")
+            end
+        },
+        {
+            --Attack Object
+            name = ReadText(1002, 2042),
+            
+            multicast = true,
+            
+            filter = function(order)
+                return (
+                    order.targetType == "object" and
+                    IsComponentClass(order.target, "container") and
+                    GetComponentData(order.target, "isenemy")
+                )
+            end,
+            
+            issue = function(order)
+                SignalObject(order.subject, "stop order")
+                SignalObject(order.subject, "attack object", ConvertStringToLuaID(tostring(order.target)), nil, delay)
+            end
+        },
+        {
+            --Fly to Zone
+            name = ReadText(1002, 2053),
+            
+            multicast = true,
+            
+            filter = function(order)
+                return (
+                    order.targetType == "object" and
+                    (
+                        IsComponentClass(order.target, "zone") or
+                        IsComponentClass(order.target, "sector")
+                    )
+                )
+            end,
+            
+            issue = function(order)
+                local destination = ConvertStringToLuaID(tostring(order.target))
+                SignalObject(order.subject, "stop order")
+                SignalObject(order.subject, "fly to pos", destination, nil, delay)
+            end
+        }
+    },
+    
+    gridOrders = {
+        {
+            --Withdraw from Battle
+            buttonText = ReadText(1002, 2057),
+            
+            multicast = true,
+            
+            buttonFilter = function(order) return true end,
+            
+            requiresTarget = false,
+            
+            issue = function(order)
+                SignalObject(order.subject, "stop order")
+                SignalObject(order.subject, "withdraw battle", nil, nil, delay)
+            end
+        },
+        {
+            --Hold Position
+            buttonText = ReadText(1002, 2051),
+            
+            multicast = true,
+            
+            buttonFilter = function(order) return true end,
+            
+            requiresTarget = false,
+            
+            issue = function(order)
+                SignalObject(order.subject, "stop order")
+                SignalObject(order.subject, "hold position", nil, nil, delay)
+            end
+        },
+        {
+            --Refuel
+            buttonText = ReadText(1002, 2027),
+            
+            multicast = false,
+            
+            buttonFilter = function(order)
+                return IsComponentClass(order.subject, "ship_l") or IsComponentClass(order.subject, "ship_xl")
+            end,
+            
+            requiresTarget = false,
+            
+            issue = function(order)
+                local entity = GetComponentData(order.subject, "pilot")
+                Helper.closeMenuForSubConversation(order.menu, false, "gOrders_refuel", entity, {0, 0, order.subject, entity})
+                order.menu.cleanup()
+            end
+        },
+        {
+            --Patrol Zone
+            buttonText = ReadText(1002, 2043),
+            
+            multicast = true,
+            
+            buttonFilter = function(order) return true end,
+            
+            requiresTarget = true,
+            
+            filter = function(order)
+                return (
+                    order.targetType == "object" and
+                    (
+                        IsComponentClass(order.target, "zone")
+                    )
+                )
+            end,
+            
+            issue = function(order)
+                SignalObject(order.subject, "stop order")
+                SignalObject(order.subject, "attack enemies", ConvertStringToLuaID(tostring(order.target)), nil, delay)
+            end
+        },
+        {
+            --Exchange Wares
+            buttonText = ReadText(1002, 2056),
+            
+            multicast = false,
+            
+            buttonFilter = function(order)
+                return (
+                    GetStorageData(order.subject).capacity > 0 and
+                    (
+                        IsComponentClass(order.subject, "ship_xl") or
+                        IsComponentClass(order.subject, "ship_l") or
+                        IsComponentClass(order.subject, "ship_m")
+                    )
+                )
+            end,
+            
+            requiresTarget = true,
+            
+            filter = function(order)
+                if  order.targetType ~= "object" or
+                    not IsComponentClass(order.target, "container") or
+                    not GetComponentData(order.target, "isplayerowned") or
+                    GetStorageData(order.target).capacity == 0 then
+                    return false
+                end
+                
+                --lifted from md/Orders.xml:
+                --['gOrders_wareexchange_select', event.object.ship, null, false, false, null, null, null, null, true, true, true, null, null, null, null, true]
+                local objectConditions = {nil, order.subject,         nil,  false, false, nil,  nil,  nil,  nil,  true, true, true, nil,  nil,  nil,  nil,  true}
+                if not Helper.checkObjectSelectConditions(order.target, objectConditions) then
+                    return false
+                end
+                
+                return true
+            end,
+            
+            issue = function(order)
+                local entity = GetComponentData(order.subject, "pilot")
+                Helper.closeMenuForSubConversation(order.menu, false, "gOrders_wareexchange_select", entity, {0, 0, ConvertStringToLuaID(tostring(order.target))})
+                order.menu.cleanup()
+            end
+        },
+        {
+            --Attack Object
+            buttonText = ReadText(1002, 2042),
+            
+            multicast = true,
+            
+            buttonFilter = function(order) return true end,
+            
+            requiresTarget = true,
+            
+            filter = function(order)
+                return (
+                    order.targetType == "object" and
+                    (
+                        IsComponentClass(order.target, "container") and not
+                        GetComponentData(order.target, "isplayerowned")
+                    )
+                )
+            end,
+            
+            issue = function(order)
+                SignalObject(order.subject, "stop order")
+                SignalObject(order.subject, "attack object", ConvertStringToLuaID(tostring(order.target)), nil, delay)
+            end
+        }
+    }
+}
