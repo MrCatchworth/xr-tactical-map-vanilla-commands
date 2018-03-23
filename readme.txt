@@ -17,6 +17,9 @@ Grid commands:
 - Patrol: Requires a zone as a target. The command selection will patrol the target zone indefinitely.
 - Transfer Wares: Requires an applicable player-owned ship or station as a target. The ware exchange menu will open between the command selection and the target. Not available in multi-select.
 - Attack Object: Requires a non-player-owned ship or station as a target. The command selection will attack the target. Unlike the right-click version, non-hostile targets can be attacked this way.
+- Stop current task: Just what it says!
+- Join my squad: Only works on ships that have no commander
+- Leave my squad: Only works on ships that are currently in your squad
 
 
 == Known Issues ==
@@ -25,6 +28,9 @@ Fly to Position sometimes causes the ship to come to a full stop until you try t
 
 
 == Changes ==
+2018-03-23: 1.3
+    - Add grid commands for "stop order", "join squad", and "leave squad"
+
 2017-10-09: 1.2
     - All commands are valid in multi-select mode, with the following exceptions:
         - Stop Task: If you right-click one of the selected ships on itself, the other ships are still being clicked onto a different ship, so it doesn't really work.
