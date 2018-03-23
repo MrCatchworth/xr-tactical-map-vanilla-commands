@@ -5,19 +5,29 @@
             <conditions>
                 <check_any>
                     <event_object_signalled object="player.primaryship" param="'tacmap_flytopos'"/>
+                    <event_object_signalled object="player.primaryship" param="'tacmap_joinsquad'"/>
+                    <event_object_signalled object="player.primaryship" param="'tacmap_leavesquad'"/>
                 </check_any>
             </conditions>
             <actions>
-                <set_value name="$subject" exact="event.param2" />
-                <set_value name="$destination" exact="event.param3.{1}" />
-                <set_value name="$posArray" exact="event.param3.{2}" />
-                
-                <signal_objects object="$subject" param="'stop order'" />
-                
-                <!-- <speak actor="$subject.pilot" line="[1012, 1013, 1018, 1019].random" comment="Yes sir" /> -->
-                
-                <set_value name="$pos" exact="position.[$posArray.{1}, $posArray.{2}, $posArray.{3}]" />
-                <signal_objects object="$subject" param="'fly to pos'" param2="$destination" param3="$pos" delay="200ms" />
+                <do_if value="event.param == 'tacmap_flytopos'">
+                    <set_value name="$subject" exact="event.param2" />
+                    <set_value name="$destination" exact="event.param3.{1}" />
+                    <set_value name="$posArray" exact="event.param3.{2}" />
+                    
+                    <signal_objects object="$subject" param="'stop order'" />
+                    
+                    <!-- <speak actor="$subject.pilot" line="[1012, 1013, 1018, 1019].random" comment="Yes sir" /> -->
+                    
+                    <set_value name="$pos" exact="position.[$posArray.{1}, $posArray.{2}, $posArray.{3}]" />
+                    <signal_objects object="$subject" param="'fly to pos'" param2="$destination" param3="$pos" delay="200ms" />
+                </do_if>
+                <do_elseif value="event.param == 'tacmap_joinsquad'">
+                    <add_to_player_squad object="event.param2" />
+                </do_elseif>
+                <do_elseif value="event.param == 'tacmap_leavesquad'">
+                    <remove_from_player_squad object="event.param2" />
+                </do_elseif>
             </actions>
         </cue>
     </cues>

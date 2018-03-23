@@ -236,6 +236,52 @@ return {
                 SignalObject(order.subject, "stop order")
                 SignalObject(order.subject, "attack object", ConvertStringToLuaID(tostring(order.target)), nil, delay)
             end
+        },
+        {
+            --Stop current task
+            buttonText = ReadText(1002, 2028),
+            
+            multicast = true,
+            
+            buttonFilter = function(order) return true end,
+            
+            requiresTarget = false,
+            
+            issue = function(order)
+                SignalObject(order.subject, "stop order")
+            end
+        },
+        {
+            --Join squad
+            buttonText = ReadText(1002, 2009),
+            
+            multicast = true,
+            
+            buttonFilter = function(order)
+                return not GetCommander(order.subject)
+            end,
+            
+            requiresTarget = false,
+            
+            issue = function(order)
+                SignalObject(GetPlayerPrimaryShipID(), "tacmap_joinsquad", order.subject)
+            end
+        },
+        {
+            --Leave squad
+            buttonText = ReadText(1002, 2008),
+            
+            multicast = true,
+            
+            buttonFilter = function(order)
+                return IsSameComponent(GetCommander(order.subject), GetPlayerPrimaryShipID())
+            end,
+            
+            requiresTarget = false,
+            
+            issue = function(order)
+                SignalObject(GetPlayerPrimaryShipID(), "tacmap_leavesquad", order.subject)
+            end
         }
     }
 }
