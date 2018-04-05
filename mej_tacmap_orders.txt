@@ -10,30 +10,35 @@ return {
             multicast = true,
             
             filter = function(order)
-                return order.targetType == "position" and
-                (
-                    order.spaceType == "zone" or
-                    order.spaceType == "sector"
-                )
+                if order.targetType == "position" then
+                    return order.spaceType == "zone" or order.spaceType == "sector"
+                elseif order.targetType == "object" then
+                    return IsComponentClass(order.target, "space")
+                end
+                return false
             end,
             
             issue = function(order)
-                
-                local destination
-                if order.spaceType == "zone" then
-                    destination = order.space
-                else
-                    destination = C.GetZoneAt(order.space, order.target)
+                if order.targetType == "position" then
+                    local destination
+                    if order.spaceType == "zone" then
+                        destination = order.space
+                    else
+                        destination = C.GetZoneAt(order.space, order.target)
+                    end
+                    destination = ConvertStringToLuaID(tostring(destination))
+                    
+                    SignalObject(GetPlayerPrimaryShipID(), "tacmap_flytopos",
+                        order.subject,
+                        {
+                            destination,
+                            {order.target.x, order.target.y, order.target.z}
+                        }
+                    )
+                elseif order.targetType == "object" then
+                    SignalObject(order.subject, "stop order")
+                    SignalObject(order.subject, "fly to pos", ConvertStringToLuaID(tostring(order.target)), nil, delay)
                 end
-                destination = ConvertStringToLuaID(tostring(destination))
-                
-                SignalObject(GetPlayerPrimaryShipID(), "tacmap_flytopos",
-                    order.subject,
-                    {
-                        destination,
-                        {order.target.x, order.target.y, order.target.z}
-                    }
-                )
             end
         },
         {
@@ -70,28 +75,6 @@ return {
             issue = function(order)
                 SignalObject(order.subject, "stop order")
                 SignalObject(order.subject, "attack object", ConvertStringToLuaID(tostring(order.target)), nil, delay)
-            end
-        },
-        {
-            --Fly to Zone
-            name = ReadText(1002, 2053),
-            
-            multicast = true,
-            
-            filter = function(order)
-                return (
-                    order.targetType == "object" and
-                    (
-                        IsComponentClass(order.target, "zone") or
-                        IsComponentClass(order.target, "sector")
-                    )
-                )
-            end,
-            
-            issue = function(order)
-                local destination = ConvertStringToLuaID(tostring(order.target))
-                SignalObject(order.subject, "stop order")
-                SignalObject(order.subject, "fly to pos", destination, nil, delay)
             end
         }
     },

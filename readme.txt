@@ -5,10 +5,9 @@ Egosoft Forums Thread: https://forum.egosoft.com/viewtopic.php?t=396379
 This is an addon for the tactical map, and has no function without it. The following commands are added.
 
 Right-click commands:
-- Fly to Position: Right-click a point in space in sector or zone mode to have a ship move to that position.
+- Fly to Position: Right-click a zone/sector/cluster, or a position on the map in zone/sector mode. The commanded ship(s) will fly there.
 - Stop Task: Right-click on the command selection itself to have it stop any task it's currently set to do. Not available in multi-select.
 - Attack Object: Right-click an enemy object to have a ship attack it. Note that it's possible to give attack commands to ships with no weaponry this way.
-- Fly to Zone: Right-click a zone in sector mode to have a ship move to that zone.
 
 Grid commands:
 - Withdraw from Battle: Issued on button press.
